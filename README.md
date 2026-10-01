@@ -19,3 +19,11 @@ API base is configured in `assets/js/config.js`:
 Upload this folder to a GitHub repository and connect it to Netlify. Publish directory is the repository root.
 
 Do not put Aiven/MySQL credentials in this frontend.
+
+## Premium frontend update
+- Split-screen premium login using the supplied VERBAS Digital Marketing logo.
+- Persistent admin session during dashboard navigation.
+- Attendance and Meeting Notes navigation scrolls within the admin dashboard instead of routing through login.
+- Central authenticated API requests keep `credentials: include`.
+- No Aiven/MySQL credentials are stored in the frontend.
+- Backend/API is unchanged.

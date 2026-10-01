@@ -93,8 +93,8 @@
             <div class="sidebar-label">CONTROL CENTER</div>
             <a class="side-link active" href="#/admin"><span>▦</span> Dashboard</a>
             <a class="side-link" href="#/employees"><span>♙</span> Employees</a>
-            <a class="side-link" href="#/admin#attendance"><span>◉</span> Attendance</a>
-            <a class="side-link" href="#/admin#notes"><span>✎</span> Meeting Notes</a>
+            <a class="side-link" href="#/admin#attendance" data-scroll="attendance"><span>◉</span> Attendance</a>
+            <a class="side-link" href="#/admin#notes" data-scroll="notes"><span>✎</span> Meeting Notes</a>
             <div class="sidebar-bottom"><div class="secure-mini">✓ <span>Protected admin session<br><small>Database authenticated</small></span></div></div>
           </aside>
           <main class="content admin-content">${body}</main>
@@ -105,30 +105,58 @@
   async function renderLogin(admin=false) {
     document.title = `${admin?'Admin Login':'Employee Login'} · VERBAS`;
     document.body.innerHTML=`
-      <div class="auth-page">
-        <div class="auth-card fade-up">
-          <div class="auth-brand"><span class="brand-mark">VB</span><div><strong>VERBAS</strong><small>${admin?'Admin Control Center':'Employee Workspace'}</small></div></div>
-          <div class="eyebrow">${admin?'SECURE ADMIN ACCESS':'EMPLOYEE ACCESS'}</div>
-          <h1>${admin?'Welcome back':'Welcome to VERBAS'}</h1>
-          <p class="muted">${admin?'Sign in to manage your team, attendance and work reports.':'Sign in to access your attendance and daily work.'}</p>
-          <form id="loginForm" class="stack-form">
-            <label>Email<input id="email" type="email" autocomplete="username" placeholder="name@verbas.in" required></label>
-            <label>Password<input id="password" type="password" autocomplete="current-password" placeholder="Your password" required></label>
-            <button class="btn btn-primary btn-wide" type="submit">Sign in securely</button>
-          </form>
-          <div class="auth-footer">${admin?'Employee login → <a href="#/login">Sign in as employee</a>':'Admin access → <a href="#/admin-login">Admin login</a>'}</div>
-        </div>
+      <div class="auth-layout-premium">
+        <section class="auth-visual-panel">
+          <div class="auth-visual-glow glow-one"></div>
+          <div class="auth-visual-glow glow-two"></div>
+          <div class="auth-visual-inner fade-up">
+            <div class="logo-lockup">
+              <img src="assets/img/verbas-logo.png" alt="VERBAS Digital Marketing logo">
+            </div>
+            <div class="visual-copy">
+              <div class="visual-eyebrow">${admin?'VERBAS · ADMIN CONTROL CENTER':'VERBAS · EMPLOYEE WORKSPACE'}</div>
+              <h1>${admin?'One secure place to lead your team.':'One secure place to manage your work.'}</h1>
+              <p>${admin?'Manage employees, attendance, work progress and meeting notes from one professional workspace.':'Track attendance, update daily work and stay aligned with your team.'}</p>
+              <div class="visual-features">
+                <div><span class="feature-icon">✓</span><span><strong>Secure access</strong><small>Protected authentication</small></span></div>
+                <div><span class="feature-icon">◈</span><span><strong>Live operations</strong><small>Real-time team visibility</small></span></div>
+                <div><span class="feature-icon">↗</span><span><strong>Smart workflow</strong><small>Simple, fast and organized</small></span></div>
+              </div>
+            </div>
+            <div class="visual-footer"><span>VERBAS DIGITAL MARKETING</span><span>•</span><span>EMPLOYEE MANAGEMENT</span></div>
+          </div>
+        </section>
+        <section class="auth-form-panel">
+          <div class="auth-card-premium fade-up">
+            <div class="mobile-logo"><img src="assets/img/verbas-logo.png" alt="VERBAS"></div>
+            <div class="auth-kicker"><span class="status-dot"></span>${admin?'SECURE ADMIN ACCESS':'EMPLOYEE ACCESS'}</div>
+            <h2>${admin?'Welcome back':'Welcome to VERBAS'}</h2>
+            <p class="auth-subtitle">${admin?'Sign in to manage your team, attendance and work reports.':'Sign in to access your attendance and daily work.'}</p>
+            <form id="loginForm" class="stack-form premium-login-form">
+              <label>Email<div class="input-wrap"><span class="input-icon">@</span><input id="email" type="email" autocomplete="username" placeholder="name@verbas.in" required></div></label>
+              <label>Password<div class="input-wrap"><span class="input-icon">◆</span><input id="password" type="password" autocomplete="current-password" placeholder="Enter your password" required><button class="password-toggle" type="button" id="togglePassword" aria-label="Show password">Show</button></div></label>
+              <button class="btn btn-primary btn-wide login-submit" type="submit"><span class="login-btn-text">Sign in securely</span><span class="login-spinner" aria-hidden="true"></span></button>
+            </form>
+            <div class="login-security"><span>✓</span><div><strong>Protected connection</strong><small>Your credentials are sent securely to the VERBAS API.</small></div></div>
+            <div class="auth-footer">${admin?'Employee login → <a href="#/login">Sign in as employee</a>':'Admin access → <a href="#/admin-login">Admin login</a>'}</div>
+          </div>
+        </section>
       </div>`;
+    $("#togglePassword").onclick=()=>{
+      const input=$("#password"), btn=$("#togglePassword");
+      const show=input.type==="password"; input.type=show?"text":"password"; btn.textContent=show?"Hide":"Show";
+    };
     $("#loginForm").onsubmit=async e=>{
       e.preventDefault();
-      const btn=$("button",e.target); btn.disabled=true; btn.textContent="Signing in…";
+      const btn=$(".login-submit",e.target), text=$(".login-btn-text",btn), spinner=$(".login-spinner",btn);
+      btn.disabled=true; text.textContent="Signing in…"; spinner.classList.add("is-visible");
       try {
-        const d=await request("/api/auth/login",{method:"POST",body:{email:$("#email").value,password:$("#password").value,role:admin?"admin":"employee"}});
+        const d=await request("/api/auth/login",{method:"POST",body:{email:$("#email").value.trim(),password:$("#password").value,role:admin?"admin":"employee"}});
         state.csrf=d.csrf_token; state.role=d.role; state.user=d.user;
         toast("Signed in successfully","success");
         location.hash=admin?"#/admin":"#/employee";
       } catch(err) { toast(err.message,"error"); }
-      finally { btn.disabled=false; btn.textContent="Sign in securely"; }
+      finally { btn.disabled=false; text.textContent="Sign in securely"; spinner.classList.remove("is-visible"); }
     };
   }
 
@@ -184,7 +212,7 @@
     if(co) co.onclick=async()=>{try{await request("/api/employee/check-out",{method:"POST"});toast("Check-out recorded","success");await renderEmployee();}catch(err){toast(err.message,"error");}};
   }
 
-  async function renderAdmin() {
+  async function renderAdmin(section="") {
     const d=await request("/api/admin/dashboard?date="+today());
     document.title="Admin Dashboard · VERBAS";
     const body=`
@@ -206,10 +234,11 @@
         ${d.notes.length?`<div class="notes-list">${d.notes.map(n=>`<article class="note-card"><strong>${esc(n.title)}</strong><small>${fmtDate(n.note_date)} · ${esc(n.admin_name||"Admin")}</small><p>${esc(n.discussion)}</p></article>`).join("")}</div>`:""}
       </section>`;
     document.body.innerHTML=shell("Admin Dashboard",body,{admin:true});
-    bindCommon(); await loadCurrentCode();
+    bindCommon(); loadCurrentCode();
     $("#generateCode").onclick=async()=>{try{const x=await request("/api/admin/attendance/generate",{method:"POST"});setCode(x);toast("New attendance code generated","success");}catch(e){toast(e.message,"error");}};
     $("#copyCode").onclick=async()=>{const v=$("#attendanceCode").textContent;if(v!=="------"){await navigator.clipboard.writeText(v);toast("Code copied","success");}};
-    $("#noteForm").onsubmit=async e=>{e.preventDefault();try{await request("/api/admin/notes",{method:"POST",body:{note_date:$("#noteDate").value,title:$("#noteTitle").value,discussion:$("#noteDiscussion").value,decisions:$("#noteDecisions").value,action_items:$("#noteActions").value}});toast("Notes saved","success");await renderAdmin();}catch(err){toast(err.message,"error");}};
+    $("#noteForm").onsubmit=async e=>{e.preventDefault();try{await request("/api/admin/notes",{method:"POST",body:{note_date:$("#noteDate").value,title:$("#noteTitle").value,discussion:$("#noteDiscussion").value,decisions:$("#noteDecisions").value,action_items:$("#noteActions").value}});toast("Notes saved","success");await renderAdmin(section);}catch(err){toast(err.message,"error");}};
+    if(section){ setTimeout(()=>document.getElementById(section)?.scrollIntoView({behavior:"smooth",block:"start"}),60); }
   }
 
   async function loadCurrentCode(){
@@ -232,17 +261,35 @@
     $("#employeeForm").onsubmit=async e=>{e.preventDefault();try{await request("/api/admin/employees",{method:"POST",body:{employee_code:$("#empCode").value,name:$("#empName").value,email:$("#empEmail").value,password:$("#empPassword").value,designation:$("#empDesignation").value,department:$("#empDepartment").value,phone:$("#empPhone").value}});toast("Employee created","success");await renderEmployees();}catch(err){toast(err.message,"error");}};
   }
 
-  function bindCommon(){ $("#logoutBtn")?.addEventListener("click",logout); }
+  function bindCommon(){
+    $("#logoutBtn")?.addEventListener("click",logout);
+    $$('[data-scroll]').forEach(link=>link.addEventListener('click',e=>{
+      e.preventDefault();
+      const target=link.dataset.scroll;
+      document.getElementById(target)?.scrollIntoView({behavior:'smooth',block:'start'});
+      $$('.side-link').forEach(x=>x.classList.remove('active'));
+      link.classList.add('active');
+      history.replaceState(null,'',`#/admin#${target}`);
+    }));
+  }
+
+  async function getSession(){
+    if(state.role && state.user) return {ok:true, role:state.role, user:state.user};
+    return me();
+  }
 
   async function router(){
-    const route=location.hash.replace(/^#/,"")||"/login";
+    const raw=location.hash.replace(/^#/,'')||'/login';
+    const parts=raw.split('#');
+    const route=parts[0]||'/login';
+    const section=parts[1]||'';
     try {
       if(route==="/login") return renderLogin(false);
       if(route==="/admin-login") return renderLogin(true);
       if(route==="/admin" || route==="/employees" || route==="/employee") {
-        const m=await me();
+        const m=await getSession();
         if(!m) return location.hash=route==="/employee"?"#/login":"#/admin-login";
-        if(route==="/admin" && m.role==="admin") return renderAdmin();
+        if(route==="/admin" && m.role==="admin") return renderAdmin(section);
         if(route==="/employees" && m.role==="admin") return renderEmployees();
         if(route==="/employee" && m.role==="employee") return renderEmployee();
         return location.hash=m.role==="admin"?"#/admin":"#/employee";
